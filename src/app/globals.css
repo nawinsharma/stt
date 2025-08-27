@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Tiptap heading visuals to ensure H1/H2/H3 look distinct */
+.tiptap h1 { @apply text-3xl font-bold; }
+.tiptap h2 { @apply text-2xl font-semibold; }
+.tiptap h3 { @apply text-xl font-semibold; }
