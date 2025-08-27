@@ -22,6 +22,8 @@ import EditorToolbar from "@/lib/EditorToolbar";
 
 export default function Home() {
   const [isListening, setIsListening] = useState<boolean>(false);
+  const [isFixing, setIsFixing] = useState<boolean>(false);
+  const [hasContent, setHasContent] = useState<boolean>(false);
 
   const baselineTextRef = useRef<string>("");
 
@@ -51,6 +53,14 @@ export default function Home() {
           "tiptap prose max-w-none w-full min-h-[60vh] md:min-h-[70vh] lg:min-h-[80vh] p-4 rounded-md border bg-card text-card-foreground focus:outline-none",
       },
     },
+    onUpdate({ editor }) {
+      const text = editor.getText().trim();
+      setHasContent(text.length > 0);
+    },
+    onCreate({ editor }) {
+      const text = editor.getText().trim();
+      setHasContent(text.length > 0);
+    },
   });
 
   const {
@@ -60,6 +70,11 @@ export default function Home() {
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable,
   } = useSpeechRecognition();
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.setEditable(!isFixing);
+  }, [editor, isFixing]);
   useEffect(() => {
     if (!editor) return;
     if (!isListening) return;
@@ -89,6 +104,7 @@ export default function Home() {
     baselineTextRef.current = "";
     resetTranscript();
     editor?.commands.setContent("<p></p>");
+    setHasContent(false);
   }, [editor, resetTranscript]);
 
   const exportPdf = useCallback(async () => {
@@ -142,6 +158,23 @@ export default function Home() {
     saveAs(blob, "transcript.docx");
   }, [editor]);
 
+  const applyGrammarFix = useCallback(async () => {
+    if (!editor) return;
+    const current = editor.getText();
+    if (!current.trim()) return;
+    try {
+      setIsFixing(true);
+      const res = await fetch("/api/grammar", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ text: current }) });
+      const data = await res.json();
+      const corrected: string = (data?.text as string) ?? current;
+      const safeText = (corrected || "").trim() || current;
+      editor.commands.setContent(`<p>${escapeHtml(safeText).replace(/\n/g, "<br/>")}</p>`);
+      editor.commands.focus("end");
+    } finally {
+      setIsFixing(false);
+    }
+  }, [editor]);
+
   const toolbar = useMemo(() => <EditorToolbar editor={editor} />, [editor]);
 
   return (
@@ -157,13 +190,23 @@ export default function Home() {
 
       <div className="w-full flex-1">
         {toolbar}
-        <div className="rounded-md border w-full">
+        <div className="rounded-md border w-full relative">
           <EditorContent editor={editor} />
+          {isFixing ? (
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center rounded-md">
+              <span className="text-sm text-muted-foreground">Fixing…</span>
+            </div>
+          ) : null}
         </div>
         <div className="mt-4 flex flex-wrap gap-2 items-center">
           <Button variant="outline" onClick={startListening} disabled={isListening || !browserSupportsSpeechRecognition || !isMicrophoneAvailable}>{isListening ? "Listening…" : "Start"}</Button>
           <Button variant="outline" onClick={stopListening} disabled={!isListening}>Stop</Button>
           <Button variant="outline" onClick={clearAll}>Reset</Button>
+          {hasContent ? (
+            <Button onClick={applyGrammarFix} disabled={isFixing}>
+              {isFixing ? "Fixing…" : "Fix Grammar"}
+            </Button>
+          ) : null}
           <StatusBadge
             ok={browserSupportsSpeechRecognition && isMicrophoneAvailable}
             listening={listening}
