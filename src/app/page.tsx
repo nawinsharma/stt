@@ -8,7 +8,6 @@ import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
 import { Button } from "@/components/ui/button";
 import { Document, Packer, Paragraph, TextRun } from "docx";
-import { useTheme } from "next-themes";
 import ThemeToggle from "@/lib/ThemeToggle";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
