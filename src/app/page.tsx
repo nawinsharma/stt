@@ -27,6 +27,15 @@ export default function Home() {
 
   const baselineTextRef = useRef<string>("");
 
+  // Load initial content from localStorage
+  const getInitialContent = () => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("editor-content");
+      return saved || "<p>Start speaking to transcribe…</p>";
+    }
+    return "<p>Start speaking to transcribe…</p>";
+  };
+
   const editor = useEditor({
     extensions: [
       Color,
@@ -44,7 +53,7 @@ export default function Home() {
         heading: { levels: [1, 2, 3] },
       }),
     ],
-    content: "<p>Start speaking to transcribe…</p>",
+    content: getInitialContent(),
     autofocus: "end",
     immediatelyRender: false,
     editorProps: {
@@ -56,6 +65,10 @@ export default function Home() {
     onUpdate({ editor }) {
       const text = editor.getText().trim();
       setHasContent(text.length > 0);
+      // Save to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem("editor-content", editor.getHTML());
+      }
     },
     onCreate({ editor }) {
       const text = editor.getText().trim();
@@ -70,11 +83,6 @@ export default function Home() {
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable,
   } = useSpeechRecognition();
-
-  useEffect(() => {
-    if (!editor) return;
-    editor.setEditable(!isFixing);
-  }, [editor, isFixing]);
   useEffect(() => {
     if (!editor) return;
     if (!isListening) return;
@@ -85,6 +93,11 @@ export default function Home() {
       editor.commands.focus("end");
     }
   }, [transcript, isListening, editor]);
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.setEditable(!isFixing);
+  }, [editor, isFixing]);
 
   const startListening = useCallback(async () => {
     if (!browserSupportsSpeechRecognition || !isMicrophoneAvailable) return;
@@ -105,6 +118,10 @@ export default function Home() {
     resetTranscript();
     editor?.commands.setContent("<p></p>");
     setHasContent(false);
+    // Clear localStorage
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("editor-content");
+    }
   }, [editor, resetTranscript]);
 
   const exportPdf = useCallback(async () => {
