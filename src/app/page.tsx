@@ -19,6 +19,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
 import CharacterCount from "@tiptap/extension-character-count";
 import EditorToolbar from "@/lib/EditorToolbar";
+import { DeleteIcon, Trash } from "lucide-react";
 
 export default function Home() {
   const [isListening, setIsListening] = useState<boolean>(false);
@@ -209,6 +210,17 @@ export default function Home() {
         {toolbar}
         <div className="rounded-md border w-full relative">
           <EditorContent editor={editor} />
+          {/* Floating delete button in top right corner */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={clearAll}
+            aria-label="Clear all content" 
+            title="Clear all content"
+            className="absolute top-2 right-2 z-10 text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200 hover:border-red-300 bg-white/90 backdrop-blur-sm"
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
           {isFixing ? (
             <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center rounded-md">
               <span className="text-sm text-muted-foreground">Fixing…</span>

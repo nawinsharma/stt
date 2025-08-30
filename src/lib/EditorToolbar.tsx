@@ -39,7 +39,7 @@ export default function EditorToolbar({ editor }: Props) {
         1.
       </Button>
       <Button variant="outline" size="sm" onClick={() => editor?.chain().focus().toggleBlockquote().run()} aria-label="Quote" title="Quote">
-        “ ”
+        " "
       </Button>
       <Button variant="outline" size="sm" onClick={() => editor?.chain().focus().toggleCodeBlock().run()} aria-label="Code block" title="Code block">
         <span className="font-mono text-sm">{`</>`}</span>
