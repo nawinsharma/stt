@@ -39,7 +39,7 @@ export default function EditorToolbar({ editor }: Props) {
         1.
       </Button>
       <Button variant="outline" size="sm" onClick={() => editor?.chain().focus().toggleBlockquote().run()} aria-label="Quote" title="Quote">
-        " "
+        &quot; &quot;
       </Button>
       <Button variant="outline" size="sm" onClick={() => editor?.chain().focus().toggleCodeBlock().run()} aria-label="Code block" title="Code block">
         <span className="font-mono text-sm">{`</>`}</span>
@@ -88,10 +88,6 @@ export default function EditorToolbar({ editor }: Props) {
       <Button variant="outline" size="sm" onClick={() => editor?.chain().focus().clearNodes().unsetAllMarks().run()} aria-label="Clear formatting" title="Clear formatting">⌫</Button>
     </div>
   );
-}
-
-function btn() {
-  return "h-9 px-3 rounded-md border bg-background text-foreground hover:bg-secondary";
 }
 
 function applyHeading(editor: Editor | null, level: 1 | 2 | 3) {
